@@ -1,75 +1,193 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Paint with Numbers</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    :root {
+      --accent: #333;
+      --hint: #444;
+      --bg: #f7f7f7;
+      --box-bg: #fff;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    /* Page layout: left instruction + right content */
+    .page {
+      display: flex;
+      gap: 36px;
+      align-items: flex-start;
+      max-width: 980px;
+      width: 100%;
+    }
+
+    /* Instruction box */
+    .instruction-box {
+      width: 240px;
+      padding: 18px;
+      background: var(--box-bg);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      margin-left: -40px; /* push slightly left visually */
+    }
+    .instruction-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    .instruction-box p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: var(--hint);
+      line-height: 1.35;
+    }
+    .instruction-box .tip {
+      font-size: 13px;
+      color: #666;
+      margin-top: 10px;
+    }
+    .instruction-box:hover {
+      transform: scale(1.03);
+      background: #f0fbff;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      cursor: default;
+    }
+
+    /* Right content */
+    .content {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #f7f7f7;
+      gap: 12px;
     }
+
     h2 {
-      margin-bottom: 10px;
-      color: #333;
+      margin: 6px 0 2px 0;
+      color: var(--accent);
+      font-size: 20px;
     }
+
+    .hint {
+      color: var(--hint);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
     table {
       border-collapse: collapse;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
+      background: var(--box-bg);
+      padding: 6px;
+      border-radius: 6px;
     }
+
     td {
       width: 30px;
       height: 30px;
-      border: 1px solid #aaa;
+      border: 1px solid #ddd;
       text-align: center;
       padding: 0;
     }
-    input {
+
+    input[type="number"] {
       width: 28px;
       height: 28px;
       text-align: center;
       border: none;
       background: #fff;
       font-size: 12px;
+      -moz-appearance: textfield;
     }
+    /* remove number input spinner on Chrome */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     canvas {
-      border: 2px solid #333;
-      margin-top: 10px;
+      border: 2px solid var(--accent);
+      margin-top: 6px;
+      background: #fff;
     }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
     button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #333;
+      padding: 8px 14px;
+      background: var(--accent);
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: 500;
     }
-    button:hover {
-      background: #555;
+    button:hover { background: #555; }
+
+    .small {
+      font-size: 13px;
+      color: #555;
     }
-    .hint {
-      color: #444;
-      font-size: 14px;
-      margin-bottom: 5px;
+
+    /* Responsive: stack on narrow screens */
+    @media (max-width: 700px) {
+      body { padding: 12px; }
+      .page { flex-direction: column; align-items: center; gap: 18px; }
+      .instruction-box { margin-left: 0; width: 100%; max-width: 440px; }
+      .content { width: 100%; }
+      table { transform: scale(0.95); transform-origin: top left; }
     }
   </style>
 </head>
 <body>
-  <h2>🎨 Paint with Numbers (0 = Black, 255 = White)</h2>
-  <div class="hint">Enter numbers (0–255) below. Watch the picture form live!</div>
+  <div class="page">
+    <!-- Instruction box on the left -->
+    <aside class="instruction-box" aria-labelledby="instr-title">
+      <h3 id="instr-title">What to do?</h3>
+      <p><strong>Enter a number (0–255)</strong> into each small box. The canvas will update live!</p>
+      <p>Try drawing shapes or gradients by typing numbers. 
+      <p class="tip">Tip: Use the <em>Randomize</em> button to explore patterns.</p>
+    </aside>
 
-  <table id="inputGrid"></table>
-  <button onclick="randomizeGrid()">Randomize Grid</button>
-  <canvas id="preview" width="100" height="100"></canvas>
-  <button onclick="window.location.href='patterns.html'">Next→</button>
-  
+    <!-- Main interactive content -->
+    <main class="content" role="main">
+      <h2>🎨 Paint with Numbers (0 = Black, 255 = White)</h2>
+      <div class="hint">Enter numbers (0–255) below. Values are clamped automatically.</div>
+
+      <table id="inputGrid" aria-label="Editable pixel grid"></table>
+
+      <div class="controls">
+        <button id="randomBtn">Randomize Grid</button>
+        <button id="fillBtn">Fill 128 (Mid gray)</button>
+        <div class="small">Use keyboard arrows to move between inputs.</div>
+      </div>
+
+      <canvas id="preview" width="100" height="100" aria-label="Preview"></canvas>
+
+      <div style="margin-top:8px;">
+        <button onclick="window.location.href='patterns.html'">Next →</button>
+      </div>
+    </main>
+  </div>
 
   <script>
     const gridSize = 10;
@@ -78,20 +196,33 @@
     const ctx = canvas.getContext('2d');
     const pixelSize = canvas.width / gridSize;
 
-    // Prefill with simple pattern (like gradient)
+    // Prefill with simple gradient-ish pattern
     let pixelValues = Array.from({ length: gridSize }, (_, i) =>
       Array.from({ length: gridSize }, (_, j) => Math.floor((i + j) / (gridSize * 2) * 255))
     );
 
-    // Build editable table
+    // Build editable table with numeric inputs
     function buildGrid() {
+      table.innerHTML = ''; // reset
       for (let i = 0; i < gridSize; i++) {
         const row = document.createElement('tr');
         for (let j = 0; j < gridSize; j++) {
           const cell = document.createElement('td');
           const input = document.createElement('input');
+          input.type = 'number';
+          input.min = 0;
+          input.max = 255;
           input.value = pixelValues[i][j];
-          input.addEventListener('input', updateCanvas);
+          input.dataset.r = i;
+          input.dataset.c = j;
+
+          // update on any input/change
+          input.addEventListener('input', handleInputChange);
+          // clamp value on blur to 0-255 and update canvas
+          input.addEventListener('blur', handleBlurClamp);
+          // allow arrow navigation (left/right/up/down)
+          input.addEventListener('keydown', handleArrowNav);
+
           cell.appendChild(input);
           row.appendChild(cell);
         }
@@ -99,33 +230,106 @@
       }
     }
 
-    // Draw canvas from grid values
-    function updateCanvas() {
-      const inputs = document.querySelectorAll('input');
-      let index = 0;
+    function handleInputChange(e) {
+      const el = e.target;
+      const r = parseInt(el.dataset.r, 10);
+      const c = parseInt(el.dataset.c, 10);
+      const val = parseInt(el.value);
+      // don't update pixelValues with NaN; treat empty as 0 for live preview
+      pixelValues[r][c] = Number.isNaN(val) ? 0 : clamp(val, 0, 255);
+      drawCanvas();
+    }
+
+    function handleBlurClamp(e) {
+      const el = e.target;
+      if (el.value === '') { el.value = 0; }
+      let val = parseInt(el.value);
+      if (Number.isNaN(val)) val = 0;
+      val = clamp(val, 0, 255);
+      el.value = val;
+      const r = parseInt(el.dataset.r, 10);
+      const c = parseInt(el.dataset.c, 10);
+      pixelValues[r][c] = val;
+      drawCanvas();
+    }
+
+    function clamp(v, a, b) {
+      return Math.max(a, Math.min(b, v));
+    }
+
+    // Keyboard arrow navigation between inputs
+    function handleArrowNav(e) {
+      const key = e.key;
+      const el = e.target;
+      const r = Number(el.dataset.r);
+      const c = Number(el.dataset.c);
+
+      if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter'].includes(key)) {
+        e.preventDefault();
+      } else {
+        return; // let other keys behave normally
+      }
+
+      let nr = r, nc = c;
+      switch (key) {
+        case 'ArrowLeft': nc = c - 1; break;
+        case 'ArrowRight': nc = c + 1; break;
+        case 'ArrowUp': nr = r - 1; break;
+        case 'ArrowDown': nr = r + 1; break;
+        case 'Enter': nr = r + 1; break;
+      }
+      if (nr < 0) nr = 0;
+      if (nc < 0) nc = 0;
+      if (nr >= gridSize) nr = gridSize - 1;
+      if (nc >= gridSize) nc = gridSize - 1;
+      const selector = `input[data-r="${nr}"][data-c="${nc}"]`;
+      const next = document.querySelector(selector);
+      if (next) next.focus();
+    }
+
+    // Draw canvas from pixelValues
+    function drawCanvas() {
       for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
-          const val = parseInt(inputs[index].value) || 0;
-          const clamped = Math.max(0, Math.min(255, val));
-          ctx.fillStyle = `rgb(${clamped},${clamped},${clamped})`;
+          const v = clamp(Math.round(pixelValues[i][j] ?? 0), 0, 255);
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
           ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
-          index++;
         }
       }
     }
 
-    // Random fill button for exploration
+    // Randomize inputs
     function randomizeGrid() {
-      const inputs = document.querySelectorAll('input');
-      inputs.forEach(input => {
-        const randomVal = Math.floor(Math.random() * 256);
-        input.value = randomVal;
-      });
-      updateCanvas();
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const r = Math.floor(Math.random() * 256);
+          pixelValues[i][j] = r;
+          const input = document.querySelector(`input[data-r="${i}"][data-c="${j}"]`);
+          if (input) input.value = r;
+        }
+      }
+      drawCanvas();
     }
 
+    // Fill with a single value (e.g., mid gray)
+    function fillGridWith(value) {
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          pixelValues[i][j] = value;
+          const input = document.querySelector(`input[data-r="${i}"][data-c="${j}"]`);
+          if (input) input.value = value;
+        }
+      }
+      drawCanvas();
+    }
+
+    // Hook up buttons
+    document.getElementById('randomBtn').addEventListener('click', randomizeGrid);
+    document.getElementById('fillBtn').addEventListener('click', () => fillGridWith(128));
+
+    // Build and draw initial
     buildGrid();
-    updateCanvas();
+    drawCanvas();
   </script>
 </body>
 </html>

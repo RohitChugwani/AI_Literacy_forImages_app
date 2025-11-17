@@ -1,48 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Compare Patterns – How AI Recognizes</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    :root {
+      --bg: #f7f7f7;
+      --card: #fff;
+      --accent: #333;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #f7f7f7;
-      height: 100vh;
-      justify-content: center;
+      background: var(--bg);
+      margin: 0;
+      padding: 18px;
       text-align: center;
     }
+
     h2 { color: #222; margin-bottom: 6px; }
-    p { color: #555; max-width: 500px; margin-bottom: 20px; }
+    p { color: #555; max-width: 720px; margin-bottom: 14px; }
+
+    /* Page layout: top row has image + numeric grid, bottom row has references */
     .grid-container {
       display: flex;
-      gap: 50px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+      max-width: 980px;
+      align-items: center;
     }
+
+    .top-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    /* small card for image+grid units */
+    .card {
+      background: var(--card);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    }
+
+    /* Visual preview (image) */
+    .visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #visualCanvas {
+      width: 160px; /* visual size on screen */
+      height: 160px;
+      image-rendering: pixelated; /* crisp pixels when scaled */
+      border: 2px solid #ccc;
+      background: #fff;
+      display: block;
+    }
+
+    /* test numeric grid */
+    .test-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* bottom row: reference items aligned horizontally */
+    .bottom-row {
+      display: flex;
+      gap: 22px;
+      justify-content: center;
+      width: 100%;
+      /* allow horizontal scroll on very narrow screens */
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .ref-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 10px;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      min-width: 0;
+    }
+
+    /* highlight applied to the whole ref-item container so outline is complete */
+    .ref-item.highlight {
+      box-shadow: 0 0 18px 6px rgba(0, 184, 120, 0.35);
+      transform: translateY(-4px) scale(1.03);
+      border-radius: 12px;
+    }
+
+    /* table styling (compact) */
     table {
       border-collapse: collapse;
-      margin: 5px;
+      background: white;
     }
     td {
-      width: 25px;
-      height: 25px;
-      border: 1px solid #ccc;
+      width: 22px;
+      height: 22px;
+      border: 1px solid #dcdcdc;
       font-size: 10px;
       text-align: center;
       background: white;
-      transition: background 0.3s;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .label { font-weight: 600; margin-top: 4px; }
-    .highlight {
-      box-shadow: 0 0 12px 3px #00b894;
-      transform: scale(1.05);
+
+    .label { font-weight: 600; margin-top: 4px; font-size: 14px; }
+
+    .controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .controls { margin-top: 15px; }
+
     button {
-      padding: 10px 20px;
-      background: #333;
+      padding: 10px 16px;
+      background: var(--accent);
       color: white;
       border: none;
       border-radius: 6px;
@@ -50,29 +142,44 @@
       font-weight: 500;
     }
     button:hover { background: #555; }
+
+    /* small-screen tweaks */
+    @media (max-width: 720px) {
+      #visualCanvas { width: 120px; height: 120px; }
+      td { width: 18px; height: 18px; font-size: 9px; }
+    }
   </style>
 </head>
 <body>
   <h2>🤖 How AI Recognizes a Letter</h2>
-  <p>AI compares what it “sees” with patterns it already knows.  
-     Can you guess which stored pattern matches this image best?</p>
+  <p>AI compares what it “sees” with patterns it already knows. Can you guess which stored pattern matches this image best?</p>
 
   <div class="grid-container">
-    <div id="testGridContainer">
-      <h4>🔍 Numerical grid for New Image</h4>
-      <table id="testGrid"></table>
+
+    <!-- TOP ROW: visual image (left) + numeric grid for new image (right) -->
+    <div class="top-row">
+      <div class="card visual" aria-hidden="false">
+        <div style="font-weight:600">Image Preview</div>
+        <!-- visual canvas: we'll draw a scaled-up image of the test pattern here -->
+        <canvas id="visualCanvas" width="8" height="8"></canvas>
+        <div style="font-size:13px;color:#444;">This is how the grid looks as an image</div>
+      </div>
+
+      <div class="card test-grid" id="testGridContainer">
+        <div style="font-weight:600">🔍 Numerical grid for New Image</div>
+        <div id="testGrid"></div><!-- we append the table here -->
+      </div>
     </div>
 
-    <div id="refGridContainer">
-      <h4> Already Learned  Patterns</h4>
-      <div id="refs"></div>
-    </div>
-  </div>
+    <!-- BOTTOM ROW: reference patterns -->
+    <div class="bottom-row" id="refRow"></div>
 
-  <div class="controls">
-    <button onclick="comparePatterns()">Compare</button>
-    <button onclick="resetTest()">Show Another</button>
-    <button onclick="window.location.href='color_grid.html'">Next→Now let's learn how AI sees this colorful world</button>
+    <!-- Controls below -->
+    <div class="controls">
+      <button id="compareBtn">Compare</button>
+      <button id="showAnotherBtn">Show Another</button>
+      <button id="nextBtn">Next → Now let's learn how AI sees this colorful world</button>
+    </div>
   </div>
 
   <script>
@@ -113,76 +220,118 @@
     };
 
     const letters = Object.keys(patterns);
-    let testLetter = 'A'; // first test pattern
+    let testLetterIndex = 0; // index among letters
+    let testLetter = letters[testLetterIndex];
 
-    const testGrid = document.getElementById('testGrid');
-    const refsDiv = document.getElementById('refs');
+    const testGridContainer = document.getElementById('testGrid');
+    const refsRow = document.getElementById('refRow');
+    const visualCanvas = document.getElementById('visualCanvas');
 
-    // ----- Generate grid for a given pattern -----
-    function makeGrid(matrix) {
+    // make a table from a matrix
+    function makeGridTable(matrix) {
       const table = document.createElement('table');
       for (let i = 0; i < gridSize; i++) {
-        const row = document.createElement('tr');
+        const tr = document.createElement('tr');
         for (let j = 0; j < gridSize; j++) {
           const td = document.createElement('td');
-          const val = matrix[i][j];
-          td.textContent = val;
-          td.style.background = `rgb(${val},${val},${val})`;
-          row.appendChild(td);
+          const v = matrix[i][j];
+          td.textContent = v;
+          td.style.background = `rgb(${v},${v},${v})`;
+          tr.appendChild(td);
         }
-        table.appendChild(row);
+        table.appendChild(tr);
       }
       return table;
     }
 
-    // ----- Initial render -----
-    function render() {
-      testGrid.innerHTML = '';
-      testGrid.appendChild(makeGrid(patterns[testLetter]));
+    // draw visual canvas scaled from matrix (we use canvas width=8,height=8 but CSS scales it)
+    function drawVisual(matrix) {
+      const ctx = visualCanvas.getContext('2d');
+      // set canvas internal size to gridSize so pixels map 1:1
+      visualCanvas.width = gridSize;
+      visualCanvas.height = gridSize;
+      // draw pixels
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const v = matrix[i][j];
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
+          ctx.fillRect(j, i, 1, 1);
+        }
+      }
+      // keep display large by setting CSS width/height (already set in style) and use image-rendering:pixelated
+    }
 
-      refsDiv.innerHTML = '';
-      letters.forEach(l => {
-        const div = document.createElement('div');
-        const grid = makeGrid(patterns[l]);
+    // render test grid and refs
+    function render() {
+      const matrix = patterns[testLetter];
+      // top visual + numeric grid
+      testGridContainer.innerHTML = '';
+      const table = makeGridTable(matrix);
+      testGridContainer.appendChild(table);
+      // draw image
+      drawVisual(matrix);
+
+      // bottom refs
+      refsRow.innerHTML = '';
+      letters.forEach((l, idx) => {
+        const item = document.createElement('div');
+        item.className = 'ref-item';
+        item.dataset.index = idx;
+
+        const grid = makeGridTable(patterns[l]);
         const label = document.createElement('div');
         label.className = 'label';
         label.textContent = `Letter ${l}`;
-        div.appendChild(grid);
-        div.appendChild(label);
-        refsDiv.appendChild(div);
+
+        item.appendChild(grid);
+        item.appendChild(label);
+        refsRow.appendChild(item);
       });
     }
 
-    // ----- Compare test with stored patterns -----
+    // compare and highlight best matching ref whole item
     function comparePatterns() {
       const test = patterns[testLetter];
-      let best = null, bestScore = -Infinity;
-      const refGrids = refsDiv.querySelectorAll('table');
+      let bestIdx = -1, bestScore = -Infinity;
 
       letters.forEach((l, idx) => {
         const ref = patterns[l];
         let match = 0, total = gridSize * gridSize;
-
         for (let i = 0; i < gridSize; i++) {
           for (let j = 0; j < gridSize; j++) {
             const diff = Math.abs(test[i][j] - ref[i][j]);
-            if (diff < 80) match++; // similar brightness
+            if (diff < 80) match++;
           }
         }
-
         const score = match / total;
-        if (score > bestScore) { bestScore = score; best = idx; }
+        if (score > bestScore) { bestScore = score; bestIdx = idx; }
       });
 
-      refGrids.forEach((g, i) => g.classList.toggle('highlight', i === best));
+      // apply highlight to the matching .ref-item container (so outline is complete)
+      const items = refsRow.querySelectorAll('.ref-item');
+      items.forEach((it, i) => {
+        if (i === bestIdx) it.classList.add('highlight'); else it.classList.remove('highlight');
+      });
     }
 
-    function resetTest() {
-      const index = letters.indexOf(testLetter);
-      testLetter = letters[(index + 1) % letters.length];
+    function showAnother() {
+      // rotate to next letter
+      testLetterIndex = (testLetterIndex + 1) % letters.length;
+      testLetter = letters[testLetterIndex];
+      // clear any highlights
+      const items = refsRow.querySelectorAll('.ref-item');
+      items.forEach(it => it.classList.remove('highlight'));
       render();
     }
 
+    // wire up buttons
+    document.getElementById('compareBtn').addEventListener('click', comparePatterns);
+    document.getElementById('showAnotherBtn').addEventListener('click', showAnother);
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      window.location.href = 'color_grid.html';
+    });
+
+    // initial render
     render();
   </script>
 </body>

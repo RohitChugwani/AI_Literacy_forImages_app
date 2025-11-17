@@ -7,41 +7,108 @@
     body {
       font-family: 'Poppins', sans-serif;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       background: #f7f7f7;
       height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    .instruction-box {
+      width: 220px;
+      padding: 20px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      margin-left: -310px;
+    }
+
+    .instruction-box h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .right-content {
       text-align: center;
     }
+
     h2 { color: #222; margin-bottom: 5px; }
-    p { color: #444; max-width: 500px; margin-bottom: 20px; }
-    table { border-collapse: collapse; margin-bottom: 15px; }
+    p { color: #444; max-width: 500px; margin: 0 auto 20px; }
+
+    table { 
+      border-collapse: collapse; 
+      margin: 0 auto 15px; 
+    }
+
     td {
-      width: 30px; height: 30px; text-align: center;
-      border: 1px solid #ccc; font-size: 12px;
-      background: white; transition: background 0.3s;
+      width: 30px; 
+      height: 30px; 
+      text-align: center;
+      border: 1px solid #ccc; 
+      font-size: 12px;
+      background: white; 
+      transition: 0.3s;
     }
-    .controls { display: flex; gap: 10px; }
+
+    /* NEW glow effect */
+    .glow {
+      background: #ffb3b3;
+      box-shadow: 0 0 22px rgba(255, 0, 0, 1);
+      transform: translateY(-2px);
+    }
+
+    .controls { 
+      display: flex; 
+      gap: 10px; 
+      justify-content: center;
+    }
+
     button {
-      padding: 10px 20px; border: none; border-radius: 6px;
-      background: #333; color: white; cursor: pointer; font-weight: 500;
+      padding: 10px 20px; 
+      border: none; 
+      border-radius: 6px;
+      background: #333; 
+      color: white; 
+      cursor: pointer; 
+      font-weight: 500;
     }
+
     button:hover { background: #555; }
   </style>
 </head>
+
 <body>
-  <h2>🔍 How AI Spots a Shape</h2>
-  <p>  
-  Can you guess this grid represents which number.Help AI to spot the pattern. Click <b>Highlight Patterns</b></p>
 
+  <div class="container">
 
-  <table id="pixelTable"></table>
+    <div class="instruction-box">
+      <h3>What To Do?</h3>
+      <p>Can you guess what number or shape this grid represents?</p>
+      <p>Click <b>Highlight Patterns</b> to see the glowing pattern.</p>
+      <p>Click <b>Show Another Shape</b> to try a new one.</p>
+    </div>
 
-  <div class="controls">
-    <button onclick="highlightPatterns()">Highlight Patterns</button>
-    <button onclick="resetGrid()">Show Another Shape</button>
-    <button onclick="window.location.href='compare.html'">Next</button>
+    <div class="right-content">
+      <h2>🔍 How AI Spots a Shape</h2>
+      <p>Help AI understand the pattern! Click <b>Highlight Patterns</b> to reveal the shapes.</p>
+
+      <table id="pixelTable"></table>
+
+      <div class="controls">
+        <button onclick="highlightPatterns()">Highlight Patterns</button>
+        <button onclick="resetGrid()">Show Another Shape</button>
+        <button onclick="window.location.href='compare.html'">Next</button>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -50,7 +117,6 @@
     let pixels = [];
     let shapeIndex = 0;
 
-    // Predefined pixel maps for a few shapes (0–255 brightness)
     const shapes = {
       'A': [
         [255,255,50,50,50,50,255,255,255,255],
@@ -89,42 +155,44 @@
         const row = document.createElement('tr');
         for (let j = 0; j < gridSize; j++) {
           const cell = document.createElement('td');
-          const value = pixels[i][j];
-          cell.textContent = value;
+          cell.textContent = pixels[i][j];
           row.appendChild(cell);
         }
         table.appendChild(row);
       }
     }
 
-    function highlightPatterns() {
-      const ranges = [
-        { min: 0, max: 60, color: '#1e90ff' },
-        { min: 61, max: 120, color: '#00b894' },
-        { min: 121, max: 180, color: '#fdcb6e' },
-        { min: 181, max: 220, color: '#e17055' },
-        { min: 221, max: 255, color: '#d63031' }
-      ];
+    let isHighlighted = false;
 
+    function highlightPatterns() {
       const cells = table.querySelectorAll('td');
       let index = 0;
-      for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-          const val = pixels[i][j];
-          const match = ranges.find(r => val >= r.min && val <= r.max);
-          cells[index].style.background = match.color;
-          cells[index].style.color = '#fff';
-          index++;
+
+      if (!isHighlighted) {
+        for (let i = 0; i < gridSize; i++) {
+          for (let j = 0; j < gridSize; j++) {
+            const val = pixels[i][j];
+            if (val <= 60) {  // pattern pixels
+              cells[index].classList.add('glow');
+            }
+            index++;
+          }
         }
+        isHighlighted = true;
+      } else {
+        cells.forEach(c => c.classList.remove('glow'));
+        isHighlighted = false;
       }
     }
 
     function resetGrid() {
       shapeIndex = (shapeIndex + 1) % shapeKeys.length;
       generateGrid();
+      isHighlighted = false;
     }
 
     generateGrid();
   </script>
+
 </body>
 </html>

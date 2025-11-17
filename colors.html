@@ -3,26 +3,62 @@
 <head>
 <meta charset="UTF-8">
 <title>How AI Reads Color in Images</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
   body {
     font-family: 'Poppins', sans-serif;
     background: #f7f7f7;
     text-align: center;
     padding: 30px;
+    margin: 0;
   }
   h2 { color: #222; }
   p { color: #555; max-width: 520px; margin: 10px auto 20px; }
+
   .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 18px;
   }
-  img {
+
+  /* wrapper that allows enlargement without shifting layout */
+  .visual-wrapper {
+    display: inline-block;
+    position: relative;
+    padding: 8px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    overflow: visible; /* allow enlarged image to overflow */
+  }
+
+  /* base image styling */
+  img#sampleImage {
     width: 120px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    display: block;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transform-origin: center;
+    cursor: zoom-in;
+    outline: none;
+    will-change: transform;
   }
+
+  /* Enlarge on hover or keyboard focus */
+  .visual-wrapper:hover,
+  .visual-wrapper:focus-within {
+    z-index: 50;                /* sit above other content */
+  }
+  .visual-wrapper:hover img,
+  .visual-wrapper:focus-within img {
+    transform: scale(1.9);      /* enlarge image */
+    box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+    cursor: zoom-out;
+  }
+
+  /* Pixel table */
   table {
     border-collapse: collapse;
     margin: 10px auto;
@@ -35,7 +71,12 @@
     color: #fff;
     font-weight: 500;
     border: 1px solid #999;
+    padding: 4px;
+    box-sizing: border-box;
   }
+
+  /* Buttons */
+  .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
   button {
     padding: 10px 20px;
     background: #333;
@@ -46,6 +87,14 @@
     font-weight: 500;
   }
   button:hover { background: #555; }
+  button:focus { outline: 3px solid rgba(0,120,215,0.18); }
+
+  @media (max-width:520px) {
+    img#sampleImage { width: 100px; }
+    td { width: 48px; height: 36px; font-size: 9px; }
+    .visual-wrapper:hover img,
+    .visual-wrapper:focus-within img { transform: scale(1.5); }
+  }
 </style>
 </head>
 <body>
@@ -54,48 +103,92 @@
     Every pixel in a colored image is made of <b>three numbers</b> — 
     how much <span style="color:red;">Red</span>, 
     <span style="color:green;">Green</span>, and 
-    <span style="color:blue;">Blue</span> it contains.  
+    <span style="color:blue;">Blue</span> it contains.
     These numbers together make up the color you see.
   </p>
 
   <div class="container">
-    <img id="sampleImage" src="image.png" alt="Apple">
-    <button onclick="generateColorGrid()">Show Pixel Grid</button>
-    <table id="colorTable"></table>
+    <!-- Visual wrapper: hover or focus to enlarge the image -->
+    <div class="visual-wrapper" tabindex="0" aria-label="Image preview. Hover or focus to enlarge.">
+      <img id="sampleImage" src="image.png" alt="Apple example image">
+    </div>
+
+    <div class="btn-row">
+      <button id="showGridBtn">Show Pixel Grid</button>
+      <!-- optional Next removed here since you said final; keep if needed:
+      <button id="nextBtn">Next → Finish</button>
+      -->
+    </div>
+
+    <table id="colorTable" aria-live="polite" role="region"></table>
+    <button onclick="window.location.href='end.html'">Next →</button>
   </div>
 
-  <script>
-    const img = document.getElementById('sampleImage');
-    const table = document.getElementById('colorTable');
+<script>
+  const img = document.getElementById('sampleImage');
+  const table = document.getElementById('colorTable');
+  const showGridBtn = document.getElementById('showGridBtn');
 
-    function generateColorGrid() {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = 30;
-      canvas.height = 30;
-      ctx.drawImage(img, 0, 0, 30, 30);
-
-      const data = ctx.getImageData(0, 0, 30, 30).data;
-      table.innerHTML = '';
-
-      // create a 10x10 grid sample
-      const gridSize = 10;
-      const step = Math.floor(30 / gridSize);
-      for (let y = 0; y < gridSize; y++) {
-        const row = document.createElement('tr');
-        for (let x = 0; x < gridSize; x++) {
-          const idx = ((y * step) * 30 + (x * step)) * 4;
-          const r = data[idx];
-          const g = data[idx + 1];
-          const b = data[idx + 2];
-          const td = document.createElement('td');
-          td.style.backgroundColor = `rgb(${r},${g},${b})`;
-          td.textContent = `${r},${g},${b}`;
-          row.appendChild(td);
-        }
-        table.appendChild(row);
-      }
+  // Ensure image loaded
+  function ensureImageLoaded(cb) {
+    if (img.complete && img.naturalWidth !== 0) {
+      cb();
+    } else {
+      img.addEventListener('load', cb, { once: true });
+      img.addEventListener('error', () => {
+        alert('Image failed to load. Ensure "image.png" exists next to this file.');
+      }, { once: true });
     }
-  </script>
+  }
+
+  ensureImageLoaded(() => {
+    showGridBtn.disabled = false;
+  });
+
+  function generateColorGrid() {
+    const sampleSize = 30; // internal sampling size
+    const gridSize = 10;
+    const step = Math.floor(sampleSize / gridSize);
+    const canvas = document.createElement('canvas');
+    canvas.width = sampleSize;
+    canvas.height = sampleSize;
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    table.innerHTML = '';
+
+    for (let y = 0; y < gridSize; y++) {
+      const row = document.createElement('tr');
+      for (let x = 0; x < gridSize; x++) {
+        const px = x * step;
+        const py = y * step;
+        const idx = (py * canvas.width + px) * 4;
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const td = document.createElement('td');
+        td.style.backgroundColor = `rgb(${r},${g},${b})`;
+        td.textContent = `${r},${g},${b}`;
+        row.appendChild(td);
+      }
+      table.appendChild(row);
+    }
+    table.setAttribute('aria-label', 'Pixel grid generated from the sample image');
+  }
+
+  showGridBtn.addEventListener('click', () => {
+    ensureImageLoaded(generateColorGrid);
+  });
+
+  // Allow Enter/Space to trigger showGridBtn when image wrapper is focused
+  const wrapper = document.querySelector('.visual-wrapper');
+  wrapper.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      ensureImageLoaded(generateColorGrid);
+    }
+  });
+</script>
 </body>
 </html>

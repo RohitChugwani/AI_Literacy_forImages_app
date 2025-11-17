@@ -4,26 +4,92 @@
   <meta charset="UTF-8">
   <title>How Computers See Images</title>
   <style>
-    body { font-family: 'Poppins', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5; }
-    .container { display: flex; gap: 40px; align-items: center; }
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      background: #f5f5f5; 
+    }
+
+    .container { 
+      display: flex; 
+      gap: 40px; 
+      align-items: flex-start; 
+    }
+
+    .instruction-box {
+      width: 220px;
+      padding: 20px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      margin-left: -310px; 
+    }
+
+    .instruction-box h3 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
     canvas { border: 2px solid #333; }
     table { border-collapse: collapse; }
-    td { width: 30px; height: 30px; text-align: center; border: 1px solid #ccc; font-size: 12px; background-color: #fff; }
-    button { margin-top: 20px; padding: 10px 20px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    td { 
+      width: 30px; 
+      height: 30px; 
+      text-align: center; 
+      border: 1px solid #ccc; 
+      font-size: 12px; 
+      background-color: #fff; 
+      transition: box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    /* Glow effect for zero cells */
+    .highlight-zero {
+      background: #ffeaea;
+      box-shadow: 0 0 10px rgba(255, 80, 80, 0.7);
+    }
+
+    button { 
+      margin-top: 20px; 
+      padding: 10px 20px; 
+      background: #333; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+    }
   </style>
 </head>
 <body>
+
   <div class="container">
+
+    <div class="instruction-box">
+      <h3>What To Do?</h3>
+      <p>Observe the pattern in the image and see how each pixel is represented using numbers from <b>0 to 255</b>.</p>
+      <p>You can click on <b>Highlight Zeros</b> to glow all the <b>0</b> cells.</p>
+    </div>
+
+    <!-- ORIGINAL IMAGE -->
     <div>
       <h2>Original Image</h2>
       <canvas id="imgCanvas" width="100" height="100"></canvas><br>
-      <button onclick="window.location.href='activity.html'">Next: Paint with Numbers →</button>
+
+      <!-- NEW BUTTON HERE -->
+      <button id="highlightZerosBtn">Highlight</button>
+
+      <button onclick="window.location.href='activity.html'">Next: →</button>
     </div>
 
+    <!-- NUMERIC TABLE -->
     <div>
       <h2>Numeric Representation (0–255)</h2>
       <table id="pixelTable"></table>
     </div>
+
   </div>
 
   <script>
@@ -70,6 +136,35 @@
 
     drawImageFromArray();
     createTable();
+
+    // -----------------------
+    // HIGHLIGHT ZERO CELLS
+    // -----------------------
+    const highlightBtn = document.getElementById('highlightZerosBtn');
+    let isHighlighted = false;
+
+    highlightBtn.addEventListener('click', () => {
+      const cells = document.querySelectorAll('#pixelTable td');
+
+      if (!isHighlighted) {
+        // Highlight cells with value 0
+        cells.forEach(cell => {
+          if (cell.textContent.trim() === "0") {
+            cell.classList.add('highlight-zero');
+          }
+        });
+        highlightBtn.textContent = "Remove Highlight";
+        isHighlighted = true;
+      } else {
+        // Remove highlight
+        cells.forEach(cell => {
+          cell.classList.remove('highlight-zero');
+        });
+        highlightBtn.textContent = "Highlight";
+        isHighlighted = false;
+      }
+    });
   </script>
+
 </body>
 </html>
