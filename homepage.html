@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How AI Sees the World</title>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: #f2f6ff;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    header {
+        background: #2a4eff;
+        color: white;
+        padding: 40px 20px;
+        border-bottom-left-radius: 50px;
+        border-bottom-right-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    header p {
+        margin-top: 10px;
+        font-size: 18px;
+        opacity: 0.95;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .step-box {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        border-radius: 16px;
+        max-width: 700px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        text-align: left;
+        transition: 0.3s;
+    }
+
+    .step-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .step-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .step-desc {
+        font-size: 16px;
+        color: #444;
+        line-height: 1.5;
+    }
+
+    .emoji {
+        font-size: 28px;
+        margin-right: 10px;
+    }
+
+    .start-btn {
+        margin-top: 30px;
+        padding: 14px 30px;
+        font-size: 18px;
+        border: none;
+        background: #2a4eff;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+    .start-btn:hover {
+        background: #1f3ad9;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>How AI Sees the World 👀🤖</h1>
+    <p>Explore how computers turn images into numbers — and how AI learns from patterns.</p>
+</header>
+
+<div class="container">
+
+    <h2>📘 What You Will Learn</h2>
+    <p style="max-width:600px;margin:auto;color:#444;">
+        This interactive experience shows how AI understands pictures.  
+        You will explore how images become numbers, how patterns are detected,  
+        and why this matters for fairness and ethics in AI.
+    </p>
+
+    <h2 style="margin-top:30px;">🔍 Steps in How AI Sees the World</h2>
+
+    <div class="step-box">
+        <div class="step-title"><span class="emoji">📥</span>1. Image Acquisition</div>
+        <div class="step-desc">
+            AI first takes an image and breaks it into tiny squares called <b>pixels</b>.  
+            Each pixel is converted into numbers (brightness or RGB values).  
+            <br><b>You will explore this step in detail today!</b>
+        </div>
+    </div>
+
+    <div class="step-box">
+        <div class="step-title"><span class="emoji">🧩</span>2. Pattern Extraction</div>
+        <div class="step-desc">
+            Once images become numbers, AI looks for shapes, edges, and patterns.  
+            For example, curved lines for “0” or straight lines for “1”.
+        </div>
+    </div>
+
+    <div class="step-box">
+        <div class="step-title"><span class="emoji">🧠</span>3. Learning from Examples</div>
+        <div class="step-desc">
+            AI compares many examples and learns what features belong to which objects.  
+            If it sees many pictures of apples, it learns the “pattern of an apple.”
+        </div>
+    </div>
+
+    <div class="step-box">
+        <div class="step-title"><span class="emoji">⚖️</span>4. Why Bias Can Happen</div>
+        <div class="step-desc">
+            If the training data mostly shows only one type of image (like faces from one country),  
+            AI can learn unfair patterns.  
+            This is called <b>data bias</b>, and understanding image acquisition helps us fix it.
+        </div>
+    </div>
+
+    <button class="start-btn" onclick="window.location.href='index.html'">
+        🚀 Start Exploring Image Acquisition
+    </button>
+
+</div>
+
+</body>
+</html>

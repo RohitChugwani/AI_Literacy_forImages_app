@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>How Computers See Images</title>
+  <style>
+    body { font-family: 'Poppins', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5; }
+    .container { display: flex; gap: 40px; align-items: center; }
+    canvas { border: 2px solid #333; }
+    table { border-collapse: collapse; }
+    td { width: 30px; height: 30px; text-align: center; border: 1px solid #ccc; font-size: 12px; background-color: #fff; }
+    button { margin-top: 20px; padding: 10px 20px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h2>Original Image</h2>
+      <canvas id="imgCanvas" width="100" height="100"></canvas><br>
+      <button onclick="window.location.href='activity.html'">Next: Paint with Numbers →</button>
+    </div>
+
+    <div>
+      <h2>Numeric Representation (0–255)</h2>
+      <table id="pixelTable"></table>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('imgCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const gridSize = 10;
+    const pixelValues = [
+      [255,255,0,0,0,0,0,0,255,255],
+      [255,0,255,255,255,255,255,255,0,255],
+      [0,255,255,255,255,255,255,255,255,0],
+      [0,255,255,255,255,255,255,255,255,0],
+      [255,0,255,255,255,255,255,255,0,255],
+      [255,255,0,0,0,0,0,0,255,255],
+      [255,255,255,255,255,255,255,255,255,255],
+      [255,255,255,255,255,255,255,255,255,255],
+      [255,255,255,255,255,255,255,255,255,255],
+      [255,255,255,255,255,255,255,255,255,255]
+    ];
+
+    function drawImageFromArray() {
+      const pixelSize = canvas.width / gridSize;
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const val = pixelValues[i][j];
+          ctx.fillStyle = `rgb(${val},${val},${val})`;
+          ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
+        }
+      }
+    }
+
+    function createTable() {
+      const table = document.getElementById('pixelTable');
+      for (let i = 0; i < gridSize; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < gridSize; j++) {
+          const cell = document.createElement('td');
+          cell.textContent = pixelValues[i][j];
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+    }
+
+    drawImageFromArray();
+    createTable();
+  </script>
+</body>
+</html>

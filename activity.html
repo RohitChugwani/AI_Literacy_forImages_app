@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paint with Numbers</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f7f7f7;
+    }
+    h2 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    table {
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+    td {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #aaa;
+      text-align: center;
+      padding: 0;
+    }
+    input {
+      width: 28px;
+      height: 28px;
+      text-align: center;
+      border: none;
+      background: #fff;
+      font-size: 12px;
+    }
+    canvas {
+      border: 2px solid #333;
+      margin-top: 10px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button:hover {
+      background: #555;
+    }
+    .hint {
+      color: #444;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎨 Paint with Numbers (0 = Black, 255 = White)</h2>
+  <div class="hint">Enter numbers (0–255) below. Watch the picture form live!</div>
+
+  <table id="inputGrid"></table>
+  <button onclick="randomizeGrid()">Randomize Grid</button>
+  <canvas id="preview" width="100" height="100"></canvas>
+  <button onclick="window.location.href='patterns.html'">Next→</button>
+  
+
+  <script>
+    const gridSize = 10;
+    const table = document.getElementById('inputGrid');
+    const canvas = document.getElementById('preview');
+    const ctx = canvas.getContext('2d');
+    const pixelSize = canvas.width / gridSize;
+
+    // Prefill with simple pattern (like gradient)
+    let pixelValues = Array.from({ length: gridSize }, (_, i) =>
+      Array.from({ length: gridSize }, (_, j) => Math.floor((i + j) / (gridSize * 2) * 255))
+    );
+
+    // Build editable table
+    function buildGrid() {
+      for (let i = 0; i < gridSize; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < gridSize; j++) {
+          const cell = document.createElement('td');
+          const input = document.createElement('input');
+          input.value = pixelValues[i][j];
+          input.addEventListener('input', updateCanvas);
+          cell.appendChild(input);
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+    }
+
+    // Draw canvas from grid values
+    function updateCanvas() {
+      const inputs = document.querySelectorAll('input');
+      let index = 0;
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const val = parseInt(inputs[index].value) || 0;
+          const clamped = Math.max(0, Math.min(255, val));
+          ctx.fillStyle = `rgb(${clamped},${clamped},${clamped})`;
+          ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
+          index++;
+        }
+      }
+    }
+
+    // Random fill button for exploration
+    function randomizeGrid() {
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        const randomVal = Math.floor(Math.random() * 256);
+        input.value = randomVal;
+      });
+      updateCanvas();
+    }
+
+    buildGrid();
+    updateCanvas();
+  </script>
+</body>
+</html>

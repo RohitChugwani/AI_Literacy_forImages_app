@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spot the Pattern – Recognizing a Shape</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f7f7f7;
+      height: 100vh;
+      text-align: center;
+    }
+    h2 { color: #222; margin-bottom: 5px; }
+    p { color: #444; max-width: 500px; margin-bottom: 20px; }
+    table { border-collapse: collapse; margin-bottom: 15px; }
+    td {
+      width: 30px; height: 30px; text-align: center;
+      border: 1px solid #ccc; font-size: 12px;
+      background: white; transition: background 0.3s;
+    }
+    .controls { display: flex; gap: 10px; }
+    button {
+      padding: 10px 20px; border: none; border-radius: 6px;
+      background: #333; color: white; cursor: pointer; font-weight: 500;
+    }
+    button:hover { background: #555; }
+  </style>
+</head>
+<body>
+  <h2>🔍 How AI Spots a Shape</h2>
+  <p>  
+  Can you guess this grid represents which number.Help AI to spot the pattern. Click <b>Highlight Patterns</b></p>
+
+
+  <table id="pixelTable"></table>
+
+  <div class="controls">
+    <button onclick="highlightPatterns()">Highlight Patterns</button>
+    <button onclick="resetGrid()">Show Another Shape</button>
+    <button onclick="window.location.href='compare.html'">Next</button>
+  </div>
+
+  <script>
+    const table = document.getElementById('pixelTable');
+    const gridSize = 10;
+    let pixels = [];
+    let shapeIndex = 0;
+
+    // Predefined pixel maps for a few shapes (0–255 brightness)
+    const shapes = {
+      'A': [
+        [255,255,50,50,50,50,255,255,255,255],
+        [255,50,255,255,255,255,50,255,255,255],
+        [50,255,255,255,255,255,255,50,255,255],
+        [50,255,50,50,50,50,255,50,255,255],
+        [50,255,50,255,255,50,255,50,255,255],
+        [50,50,50,50,50,50,50,50,50,255],
+        [50,255,50,255,255,50,255,50,255,255],
+        [50,255,50,255,255,50,255,50,255,255],
+        [50,255,255,255,255,255,255,255,255,255],
+        [255,255,255,255,255,255,255,255,255,255]
+      ],
+      '3': [
+        [255,50,50,50,50,255,255,255,255,255],
+        [255,50,255,255,50,255,255,255,255,255],
+        [255,255,255,255,50,255,255,255,255,255],
+        [255,255,50,50,50,255,255,255,255,255],
+        [255,255,255,255,50,255,255,255,255,255],
+        [255,255,255,255,50,255,255,255,255,255],
+        [255,50,50,50,50,255,255,255,255,255],
+        [255,255,255,255,255,255,255,255,255,255],
+        [255,255,255,255,255,255,255,255,255,255],
+        [255,255,255,255,255,255,255,255,255,255]
+      ]
+    };
+
+    const shapeKeys = Object.keys(shapes);
+
+    function generateGrid() {
+      table.innerHTML = '';
+      const currentShape = shapeKeys[shapeIndex];
+      pixels = shapes[currentShape];
+
+      for (let i = 0; i < gridSize; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < gridSize; j++) {
+          const cell = document.createElement('td');
+          const value = pixels[i][j];
+          cell.textContent = value;
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+    }
+
+    function highlightPatterns() {
+      const ranges = [
+        { min: 0, max: 60, color: '#1e90ff' },
+        { min: 61, max: 120, color: '#00b894' },
+        { min: 121, max: 180, color: '#fdcb6e' },
+        { min: 181, max: 220, color: '#e17055' },
+        { min: 221, max: 255, color: '#d63031' }
+      ];
+
+      const cells = table.querySelectorAll('td');
+      let index = 0;
+      for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+          const val = pixels[i][j];
+          const match = ranges.find(r => val >= r.min && val <= r.max);
+          cells[index].style.background = match.color;
+          cells[index].style.color = '#fff';
+          index++;
+        }
+      }
+    }
+
+    function resetGrid() {
+      shapeIndex = (shapeIndex + 1) % shapeKeys.length;
+      generateGrid();
+    }
+
+    generateGrid();
+  </script>
+</body>
+</html>

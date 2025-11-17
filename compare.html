@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Compare Patterns – How AI Recognizes</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f7f7f7;
+      height: 100vh;
+      justify-content: center;
+      text-align: center;
+    }
+    h2 { color: #222; margin-bottom: 6px; }
+    p { color: #555; max-width: 500px; margin-bottom: 20px; }
+    .grid-container {
+      display: flex;
+      gap: 50px;
+      align-items: flex-start;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 5px;
+    }
+    td {
+      width: 25px;
+      height: 25px;
+      border: 1px solid #ccc;
+      font-size: 10px;
+      text-align: center;
+      background: white;
+      transition: background 0.3s;
+    }
+    .label { font-weight: 600; margin-top: 4px; }
+    .highlight {
+      box-shadow: 0 0 12px 3px #00b894;
+      transform: scale(1.05);
+    }
+    .controls { margin-top: 15px; }
+    button {
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button:hover { background: #555; }
+  </style>
+</head>
+<body>
+  <h2>🤖 How AI Recognizes a Letter</h2>
+  <p>AI compares what it “sees” with patterns it already knows.  
+     Can you guess which stored pattern matches this image best?</p>
+
+  <div class="grid-container">
+    <div id="testGridContainer">
+      <h4>🔍 Numerical grid for New Image</h4>
+      <table id="testGrid"></table>
+    </div>
+
+    <div id="refGridContainer">
+      <h4> Already Learned  Patterns</h4>
+      <div id="refs"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="comparePatterns()">Compare</button>
+    <button onclick="resetTest()">Show Another</button>
+    <button onclick="window.location.href='color_grid.html'">Next→Now let's learn how AI sees this colorful world</button>
+  </div>
+
+  <script>
+    const gridSize = 8;
+
+    // --- Simple grayscale matrices for 3 letters ---
+    const patterns = {
+      'A': [
+        [255,200,100,100,100,100,200,255],
+        [255,100,255,255,255,255,100,255],
+        [100,255,255,255,255,255,255,100],
+        [100,255,100,100,100,100,255,100],
+        [100,255,100,255,255,100,255,100],
+        [100,100,100,100,100,100,100,100],
+        [100,255,100,255,255,100,255,100],
+        [255,255,255,255,255,255,255,255],
+      ],
+      'B': [
+        [100,100,100,100,100,255,255,255],
+        [100,255,255,255,255,100,100,255],
+        [100,255,255,255,255,100,100,255],
+        [100,100,100,100,100,255,255,255],
+        [100,255,255,255,255,100,100,255],
+        [100,255,255,255,255,100,100,255],
+        [100,100,100,100,100,255,255,255],
+        [255,255,255,255,255,255,255,255],
+      ],
+      'C': [
+        [255,200,100,100,100,200,255,255],
+        [200,100,255,255,255,255,255,255],
+        [100,255,255,255,255,255,255,255],
+        [100,255,255,255,255,255,255,255],
+        [100,255,255,255,255,255,255,255],
+        [100,255,255,255,255,255,255,255],
+        [200,100,255,255,255,255,255,255],
+        [255,200,100,100,100,200,255,255],
+      ]
+    };
+
+    const letters = Object.keys(patterns);
+    let testLetter = 'A'; // first test pattern
+
+    const testGrid = document.getElementById('testGrid');
+    const refsDiv = document.getElementById('refs');
+
+    // ----- Generate grid for a given pattern -----
+    function makeGrid(matrix) {
+      const table = document.createElement('table');
+      for (let i = 0; i < gridSize; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < gridSize; j++) {
+          const td = document.createElement('td');
+          const val = matrix[i][j];
+          td.textContent = val;
+          td.style.background = `rgb(${val},${val},${val})`;
+          row.appendChild(td);
+        }
+        table.appendChild(row);
+      }
+      return table;
+    }
+
+    // ----- Initial render -----
+    function render() {
+      testGrid.innerHTML = '';
+      testGrid.appendChild(makeGrid(patterns[testLetter]));
+
+      refsDiv.innerHTML = '';
+      letters.forEach(l => {
+        const div = document.createElement('div');
+        const grid = makeGrid(patterns[l]);
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = `Letter ${l}`;
+        div.appendChild(grid);
+        div.appendChild(label);
+        refsDiv.appendChild(div);
+      });
+    }
+
+    // ----- Compare test with stored patterns -----
+    function comparePatterns() {
+      const test = patterns[testLetter];
+      let best = null, bestScore = -Infinity;
+      const refGrids = refsDiv.querySelectorAll('table');
+
+      letters.forEach((l, idx) => {
+        const ref = patterns[l];
+        let match = 0, total = gridSize * gridSize;
+
+        for (let i = 0; i < gridSize; i++) {
+          for (let j = 0; j < gridSize; j++) {
+            const diff = Math.abs(test[i][j] - ref[i][j]);
+            if (diff < 80) match++; // similar brightness
+          }
+        }
+
+        const score = match / total;
+        if (score > bestScore) { bestScore = score; best = idx; }
+      });
+
+      refGrids.forEach((g, i) => g.classList.toggle('highlight', i === best));
+    }
+
+    function resetTest() {
+      const index = letters.indexOf(testLetter);
+      testLetter = letters[(index + 1) % letters.length];
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

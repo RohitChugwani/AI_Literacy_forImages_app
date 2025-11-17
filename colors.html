@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>How AI Reads Color in Images</title>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f7f7f7;
+    text-align: center;
+    padding: 30px;
+  }
+  h2 { color: #222; }
+  p { color: #555; max-width: 520px; margin: 10px auto 20px; }
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  img {
+    width: 120px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  table {
+    border-collapse: collapse;
+    margin: 10px auto;
+  }
+  td {
+    width: 70px;
+    height: 50px;
+    text-align: center;
+    font-size: 10px;
+    color: #fff;
+    font-weight: 500;
+    border: 1px solid #999;
+  }
+  button {
+    padding: 10px 20px;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  button:hover { background: #555; }
+</style>
+</head>
+<body>
+  <h2>🍎 How AI Sees Colors as Numbers</h2>
+  <p>
+    Every pixel in a colored image is made of <b>three numbers</b> — 
+    how much <span style="color:red;">Red</span>, 
+    <span style="color:green;">Green</span>, and 
+    <span style="color:blue;">Blue</span> it contains.  
+    These numbers together make up the color you see.
+  </p>
+
+  <div class="container">
+    <img id="sampleImage" src="image.png" alt="Apple">
+    <button onclick="generateColorGrid()">Show Pixel Grid</button>
+    <table id="colorTable"></table>
+  </div>
+
+  <script>
+    const img = document.getElementById('sampleImage');
+    const table = document.getElementById('colorTable');
+
+    function generateColorGrid() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 30;
+      canvas.height = 30;
+      ctx.drawImage(img, 0, 0, 30, 30);
+
+      const data = ctx.getImageData(0, 0, 30, 30).data;
+      table.innerHTML = '';
+
+      // create a 10x10 grid sample
+      const gridSize = 10;
+      const step = Math.floor(30 / gridSize);
+      for (let y = 0; y < gridSize; y++) {
+        const row = document.createElement('tr');
+        for (let x = 0; x < gridSize; x++) {
+          const idx = ((y * step) * 30 + (x * step)) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const td = document.createElement('td');
+          td.style.backgroundColor = `rgb(${r},${g},${b})`;
+          td.textContent = `${r},${g},${b}`;
+          row.appendChild(td);
+        }
+        table.appendChild(row);
+      }
+    }
+  </script>
+</body>
+</html>
